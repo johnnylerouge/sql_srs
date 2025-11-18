@@ -1,29 +1,61 @@
 import streamlit as st
 import pandas as pd
+import duckdb
+import io
 
+csv = '''
+beverage,price
+orange juice,2.5
+Expresso,2
+Tea,3
+'''
+
+beverages = pd.read_csv(io.StringIO(csv))
+
+csv2 = '''
+food_item,food_price
+cookie juice,2.5
+chocolatine,2
+muffin,3
+'''
+
+food_items = pd.read_csv(io.StringIO(csv2))
+
+answer = """
+SELECT * FROM beverages
+CROSS JOIN food_items
+"""
+
+solution = duckdb.sql(answer).df()
+
+with st.sidebar:
+    option = st.selectbox("How would you like to be contacted",
+                          ["Joins", "Group By", "Window function"],
+                           index = None,
+                           placeholder = "select your theme...")
+    st.write("You selected : ", option)
+
+
+st.header("enter your code")
+query = st.text_area(label="Votre code SQL ici", key='user Input')
+if query:
+    result = duckdb.sql(query).df()
+    st.dataframe(result)
 st.write("Hello world")
 data = {"a": [1, 2, 3], "b": [3, 4, 5]}
 df = pd.DataFrame(data)
 
-st.write('''
-Spaced Repetition System SQL
-''')
 
-option = st.selectbox("How would you like to be contacted",
-                      ["Joins", "Group By", "Window function"],
-                       index = None,
-                       placeholder = "select your theme...")
 
-st.write("Your selected option is:", option)
+tab2, tab3 = st.tabs(["Tables", "Solution"])
 
-tab1, tab2, tab3 = st.tabs(["Cat", "Dog", "Owl"])
-with tab1:
-    input_text = st.text_area(label = 'entrez votre input')
-    st.write(input_text)
 with tab2:
-    st.header("A dog")
-    st.image("https://static.streamlit.io/examples/dog.jpg", width=200)
-with tab3:
-    st.header("An owl")
-    st.image("https://static.streamlit.io/examples/owl.jpg", width=200)
+    st.write('table: beverages')
+    st.dataframe(beverages)
+    st.write("table: food_items")
+    st.dataframe(food_items)
+    st.write("expected:")
+    st.dataframe(solution)
 
+with tab3:
+    st.write(answer)
